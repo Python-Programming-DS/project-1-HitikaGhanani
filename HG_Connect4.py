@@ -73,7 +73,7 @@ def getavailablePosition(board):
     for col in range(7):  # loop over columns
         for row in range(6):  # check from bottom (row 0) 
             if board[row][col] == " ":
-                positions.append(f"{chr(ord('a')+col)}{row+1}")
+                positions.append(f"{chr(ord('a')+col)}{row+1}") 
                 break   # stop after finding the lowest empty row in this column
     return positions
 
@@ -143,15 +143,15 @@ def playGame():
         print("Available positions are:", available,"\n")
         
         move = input("Please enter column-letter and row-number (e.g., a1): ")
-        pos = parseMove(move)  # convert input into board indices
+        position = parseMove(move)  # convert input into board indices
         
         # Check for invalid move
-        if pos is None or board[pos[0]][pos[1]] != " ":
+        if position is None or board[position[0]][position[1]] != " ":
             print("Invalid move, try again.\n")
             continue
         
         # Place the player's marker
-        board[pos[0]][pos[1]] = turn
+        board[position[0]][position[1]] = turn
         print("Thank you for your selection.\n")
         
         # Check if the current player wins
