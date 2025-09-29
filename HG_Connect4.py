@@ -38,44 +38,36 @@ def printBoard(board):
     print("---------------------------------\n")
 	
 
-# Parse player input like "c1"
-def parseMove(move):
-    col_map = {'a':0,'b':1,'c':2,'d':3,'e':4,'f':5,'g':6}     # Map column letters to board column indices
+def validateMove(board, move):
+    # Map column letters to indices
+    col_map = {'a':0,'b':1,'c':2,'d':3,'e':4,'f':5,'g':6}
+
     if len(move) < 2:
-        return 
-    
-    # Extract column letter and row number from input
+        return None
+
     col_letter = move[0].lower()
     row_number = move[1]
     if not row_number.isdigit():
         return None
-    
-    # Convert row string to integer 
-    row_number = int(row_number)
-    row_index = row_number - 1
+
+    row_index = int(row_number) - 1
     col_index = col_map.get(col_letter, -1)
-    if col_index == -1 or row_index < 0 or row_index > 5:      # Validating both row and column indices
+
+    # Check if indices are within board and cell is empty
+    if col_index == -1 or row_index < 0 or row_index > 5 or board[row_index][col_index] != " ":
         return None
-    return (row_index, col_index)     # Return (row_index, col_index) to access board
 
-
-
-# To check if column entry is valid or not
-def validateEntry(board, col):
-    if col < 0 or col > 6:    # To check outside board
-        return False
-    if board[5][col] != " ":  #To check if column is already full or not
-        return False
-    return True
-
-def getavailablePosition(board):
-    positions = []
-    for col in range(7):  # loop over columns
-        for row in range(6):  # check from bottom (row 0) 
-            if board[row][col] == " ":
-                positions.append(f"{chr(ord('a')+col)}{row+1}") 
-                break   # stop after finding the lowest empty row in this column
-    return positions
+    return (row_index, col_index)
+def availablePosition(board):
+    # Returns list of available positions
+    cols = ['a','b','c','d','e','f','g']
+    available = []
+    for i, col in enumerate(cols):
+        for row in range(6):
+            if board[row][i] == " ":  # check for empty space
+                available.append(f'{col}{row+1}')
+                break  # only the lowest empty row in this column
+    return available
 
 
 			
@@ -127,55 +119,80 @@ def checkEnd(board, turn):
     # otherwise, game is still going
     return False
 
-
-
 # Function to play a game of Connect Four
-def playGame():
+def main():
     turn = "X"                 # X always starts
     gameOver = False
-    board = resetBoard()       # initializing empty board
+    board = resetBoard()       # initialize empty board
 
     while not gameOver:
         printBoard(board)      # display the board
         print(f"{turn}'s turn.")
-        
-        available = getavailablePosition(board)  # get all available positions
-        print("Available positions are:", available,"\n")
-        
-        move = input("Please enter column-letter and row-number (e.g., a1): ")
-        position = parseMove(move)  # convert input into board indices
-        
-        # Check for invalid move
-        if position is None or board[position[0]][position[1]] != " ":
-            print("Invalid move, try again.\n")
+
+        available = availablePosition(board)  # get all available positions
+        print("Available positions are:", available)
+
+        move = input("Please enter column-letter and row-number (e.g., a1): ").lower()
+
+        # Parse input
+        if len(move) < 2:
+            print("Invalid input. Try again.\n")
             continue
+
+        col_map = {'a':0,'b':1,'c':2,'d':3,'e':4,'f':5,'g':6}
+        col_letter = move[0]
+        row_str = move[1:]
+
+        if col_letter not in col_map or not row_str.isdigit():
+            print("Invalid input. Try again.\n")
+            continue
+
+        col = col_map[col_letter]
+        row = int(row_str) - 1
+
+        # Check if the column is full or move is not at the correct lowest available row
+        # Find the lowest empty row in this column
         
-        # Place the player's marker
-        board[position[0]][position[1]] = turn
+        lowest_row = None
+        for r in range(6):
+            if board[r][col] == " ":
+                lowest_row = r
+                break
+
+        if lowest_row is None:
+            print("Invalid move. Column is full.\n")
+            continue
+
+        if row != lowest_row:
+            print(f"You must place at the lowest available row in column {col_letter}. Try again.\n")
+            continue
+
+        # Place the marker
+        board[lowest_row][col] = turn
         print("Thank you for your selection.\n")
-        
-        # Check if the current player wins
+
+
+
+        # Check for win or draw
         if CheckWin(board, turn):
             printBoard(board)
             print(f"{turn} IS THE WINNER!!!")
             gameOver = True
-        # Check for a draw
         elif CheckFull(board):
             printBoard(board)
             print("It's a draw!")
             gameOver = True
         else:
-            # Switch turns
             turn = "O" if turn == "X" else "X"
-    
+
     # Ask if players want to play again
     again = input("Another game (y/n)? ")
     if again.lower() == 'y':
-        playGame()
+        main()
     else:
         print("Thank you for playing!")
 
 
-# Start the game
-print("New game: X goes first.\n")
-playGame()
+# Run the game
+if __name__ == "__main__":
+    main()
